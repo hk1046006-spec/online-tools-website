@@ -1,0 +1,12 @@
+# dependencies
+node_modules/
+
+# runtime state — recreated automatically
+data/sessions.json
+data/session-secret.txt
+data/messages.json
+
+# logs and temp files
+*.log
+*.tmp
+.DS_Store

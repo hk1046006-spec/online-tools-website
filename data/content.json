@@ -1,0 +1,99 @@
+{
+  "hero": {
+    "eyebrow": "10 free tools, no sign-up",
+    "headline": "Free Online Tools That Get the Job Done",
+    "subheadline": "Compress images, create QR codes, generate strong passwords, count words, format JSON, convert units and more. Every tool runs instantly — most of them right inside your browser.",
+    "imageId": "images/muvg75oa-7a2311d19de5.jpg",
+    "primaryCta": {
+      "label": "Browse all tools",
+      "href": "#tools"
+    },
+    "secondaryCta": {
+      "label": "Read about the project",
+      "href": "/about"
+    },
+    "imageAlt": "A laptop, notebook, pen and a cup of coffee arranged on a wooden desk"
+  },
+  "banner": {
+    "title": "Everyday utilities in one clean, fast place",
+    "text": "No accounts, no watermarks, no upload limits hidden behind a paywall. Pick a tool, get your result and move on.",
+    "imageId": "banners/muvg75pb-585a2e4fe22e.jpg",
+    "imageAlt": "A bright desk with a laptop, a notebook and a mug beside a window"
+  },
+  "promo": {
+    "title": "Private by design",
+    "text": "Password generation, word counting, JSON formatting, colour conversion, unit conversion, age calculation, URL encoding and text casing all happen inside your browser. Nothing is sent to this server. Only the image compressor and the QR generator need the server — and files you upload there are deleted immediately after processing.",
+    "imageId": "images/muvg75q8-72fd1eb2cd23.jpg",
+    "bullets": [
+      "Your text never leaves your device in the browser-only tools",
+      "Uploaded images are processed in memory and never stored",
+      "No tracking scripts, no third-party analytics"
+    ],
+    "imageAlt": "A closed laptop and a white table lamp on a plain desk"
+  },
+  "faq": [
+    {
+      "q": "Are these tools really free?",
+      "a": "Yes. Every tool on this site is free to use with no account, no credit card and no daily limit."
+    },
+    {
+      "q": "Do you store the files I upload?",
+      "a": "No. Images sent to the image compressor are processed in memory and the temporary file is deleted as soon as the response is sent."
+    },
+    {
+      "q": "Does it work on mobile?",
+      "a": "The whole site is mobile-first and tested from 360px wide phone screens up to large desktop displays."
+    },
+    {
+      "q": "Can I use the results commercially?",
+      "a": "Yes. The tools only transform data you own, so the output is yours to use however you like."
+    }
+  ],
+  "about": {
+    "title": "About ToolBox",
+    "lede": "A small, carefully built set of everyday utilities that work on any device and respect your privacy.",
+    "story": [
+      "ToolBox started from a simple annoyance: most \"free online tool\" websites bury a single useful feature under adverts, pop-ups, forced sign-ups and long waits, and many of them quietly keep a copy of whatever you upload.",
+      "This site takes the opposite approach. Each of the ten tools does one job well, loads in a fraction of a second and tells you plainly what it does. Eight of the ten tools run entirely in your browser, which means the text and numbers you type never travel over the network at all.",
+      "The codebase is deliberately small: Node.js and Express on the server, plain HTML, CSS and JavaScript in the browser, and a handful of JSON files for content. That keeps the site fast, easy to audit and simple to extend with new tools later."
+    ],
+    "imageId": "images/muvg75rp-2fa087b4d390.jpg",
+    "points": [
+      {
+        "title": "Actually functional",
+        "text": "Every button, form and download on this site does real work. Nothing here is a mock-up."
+      },
+      {
+        "title": "Lightweight by default",
+        "text": "No front-end framework, no tracking scripts and no unnecessary network requests. Pages are a handful of kilobytes."
+      },
+      {
+        "title": "Honest about limits",
+        "text": "Upload limits, supported formats and error messages are stated up front instead of failing silently."
+      }
+    ],
+    "stats": [
+      {
+        "value": "10",
+        "label": "working tools"
+      },
+      {
+        "value": "8",
+        "label": "run fully in your browser"
+      },
+      {
+        "value": "0",
+        "label": "tracking scripts"
+      }
+    ],
+    "imageAlt": "A tidy desk with a laptop, notebook and coffee seen from above"
+  },
+  "contact": {
+    "title": "Contact",
+    "lede": "Found a bug, spotted a wrong conversion, or want to suggest a new tool? Send a message using the form below.",
+    "email": "support@example.com",
+    "responseNote": "Messages are stored on this server and shown in the admin panel. Expect a reply within a couple of working days.",
+    "imageId": "images/muvg75su-9f023c148bb8.jpg",
+    "imageAlt": "A laptop, a printer and a small plant on a white desk"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "online-tools-website",
+  "version": "1.0.0",
+  "description": "Production-ready multi-tool online utility website built with Node.js, Express and vanilla JS. File-based storage, fully working admin panel, 10 working tools.",
+  "main": "server.js",
+  "private": true,
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node scripts/seed-images.js",
+    "reset": "node scripts/reset-data.js",
+    "test": "node tests/e2e.js",
+    "test:browser": "node tests/browser.js",
+    "test:layout": "node tests/layout-audit.js"
+  },
+  "keywords": [
+    "online-tools",
+    "express",
+    "image-compressor",
+    "qr-code",
+    "utilities"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@img/sharp-wasm32": "^0.35.5",
+    "bcryptjs": "^3.0.2",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.1",
+    "express-session": "^1.18.1",
+    "helmet": "^8.1.0",
+    "multer": "^2.0.2",
+    "qrcode": "^1.5.4",
+    "sharp": "^0.34.5"
+  }
+}

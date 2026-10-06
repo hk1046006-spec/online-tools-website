@@ -1,0 +1,13 @@
+# ToolBox — static fallback copy.
+# NOTE: Express generates /robots.txt dynamically so that the Sitemap line always
+# matches the domain you configure in the admin panel. This file is only used if
+# you host the contents of public/ on a static server instead of running Node.
+# Replace example.com with your own domain before doing that.
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /uploads/thumbnails/
+
+Sitemap: https://example.com/sitemap.xml
