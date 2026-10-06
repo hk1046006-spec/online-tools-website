@@ -48,6 +48,22 @@
     statusEl.style.color = type === 'error' ? 'var(--danger)' : '';
   }
 
+  // Decode the base64 data URL returned by /api/image/compress into a Blob so
+  // the download button works with a real file. Done with atob() rather than
+  // fetch(), because fetching a data: URL is governed by CSP connect-src.
+  function dataUrlToBlob(dataUrl) {
+    var parts = dataUrl.split(',');
+    var mimeMatch = parts[0].match(/:(.*?);/);
+    var mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+    var binary = atob(parts[1]);
+    var len = binary.length;
+    var bytes = new Uint8Array(len);
+    for (var i = 0; i < len; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: mime });
+  }
+
   function setProgress(percent) {
     if (!progressWrap || !progressBar) return;
     if (percent === null) {
@@ -188,10 +204,7 @@
       if (xhr.status >= 200 && xhr.status < 300 && data && data.success && data.dataUrl) {
         // The server returns the optimised image as a base64 data URL; turn it
         // into a Blob so the download button works with a real file.
-        fetch(data.dataUrl)
-          .then(function (response) {
-            return response.blob();
-          })
+        Promise.resolve(dataUrlToBlob(data.dataUrl))
           .then(function (blob) {
             if (resultUrl) URL.revokeObjectURL(resultUrl);
             resultBlob = blob;
