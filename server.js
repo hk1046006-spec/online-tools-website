@@ -83,7 +83,9 @@ app.use(
         'script-src': ["'self'"],
         'style-src': ["'self'", "'unsafe-inline'"], // inline style attributes are used for colour previews
         'img-src': ["'self'", 'data:', 'blob:'],
-        'connect-src': ["'self'"],
+        // data: is required by the image compressor, which turns the base64
+        // image URL returned by /api/image/compress into a Blob for download.
+        'connect-src': ["'self'", 'data:'],
         'font-src': ["'self'"],
         'object-src': ["'none'"],
         'base-uri': ["'self'"],
