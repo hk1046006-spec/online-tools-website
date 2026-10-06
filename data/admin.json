@@ -1,8 +1,8 @@
 {
   "username": "admin",
   "email": "support@example.com",
-  "passwordHash": "$2b$12$lr2QOEu55eJy5VBV0JXBNuw7Ywd9oDmGZh28Mf6snp0/1Fy48/8b.",
+  "passwordHash": "$2b$10$DxGYGxtCEDDD3THStsDSEOcqvajcmB.RQlUDXpmYQIZy3aY87apdy",
   "passwordIsDefault": false,
   "createdAt": "2026-10-05T16:12:19.242Z",
-  "updatedAt": "2026-10-06T08:04:43.960Z"
+  "updatedAt": "2026-10-06T14:16:51.743Z"
 }
