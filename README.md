@@ -254,7 +254,7 @@ file, so nobody can fetch an admin template or bypass the login by opening a sta
 
 | # | Tool | Runs in | Notes |
 |---|------|---------|-------|
-| 1 | Image Compressor | Server (Sharp) | JPG/PNG up to 10 MB, quality slider, optional max width, optional WebP output, before/after sizes, download |
+| 1 | Image Compressor | Server (Sharp) | JPG/PNG up to 4 MB, quality slider, optional max width, optional WebP output, before/after sizes, download |
 | 2 | QR Code Generator | Server (`qrcode`) | Any text or URL up to 2000 characters, 256–1024 px, four error-correction levels, PNG download |
 | 3 | Password Generator | Browser | Length 4–128, four character groups, look-alike exclusion, entropy meter, recent list, copy |
 | 4 | Word Counter | Browser | Words, characters, characters without spaces, sentences, paragraphs, lines, reading and speaking time, top repeated words |
@@ -280,7 +280,7 @@ Every tool page also supports deep links, for example:
 | Method | Endpoint               | Purpose | Limits |
 | ------ | ---------------------- | ------- | ------ |
 | POST   | `/api/qr/generate`     | `{ text, size, level }` → `{ dataUrl, … }` | 2000 characters, 90 requests / 15 min |
-| POST   | `/api/image/compress`  | multipart `image` + `quality`, `format`, `maxWidth` → `{ dataUrl, originalSize, compressedSize, reductionPercent, … }` | JPEG/PNG only, 10 MB, 40 requests / 15 min |
+| POST   | `/api/image/compress`  | multipart `image` + `quality`, `format`, `maxWidth` → `{ dataUrl, originalSize, compressedSize, reductionPercent, … }` | JPEG/PNG only, 4 MB, 40 requests / 15 min |
 | POST   | `/api/contact`         | `{ name, email, subject, message }` → `{ success }` | 6 requests / hour |
 
 All three reject cross-site requests (Origin check), validate their input server-side and return
@@ -293,7 +293,7 @@ JSON errors with a `success: false` flag. They never return a stack trace.
 **Public image compressor**
 
 * Accepted: `image/jpeg`, `image/png` (and nothing else)
-* Maximum size: 10 MB
+* Maximum size: 4 MB
 * Validated twice: the declared MIME type, then the real file content with Sharp
 * Files chosen in the browser are checked before upload as well, so a `.exe`, `.zip`, `.pdf`, `.js`,
   `.php`, `.html` or `.txt` file is rejected with a specific message
@@ -302,7 +302,7 @@ JSON errors with a `success: false` flag. They never return a stack trace.
 **Admin content images**
 
 * Accepted: JPG/JPEG, PNG, WebP
-* Maximum size: 5 MB
+* Maximum size: 4 MB
 * On upload: MIME check → Sharp decode → auto-orient → resize to a sane maximum (2400 px for images
   and banners, 512 px for logos) → re-encode (JPEG mozjpeg, PNG level 9, WebP q82) → random
   filename (`<base36 timestamp>-<12 hex chars>.<ext>`) → 400 px thumbnail written to
@@ -466,7 +466,7 @@ Open Graph URLs will use whatever hostname the visitor requested.
 | Passwords | bcrypt, cost 12; password change requires the current password and confirmation |
 | CSRF | Random per-session token embedded in every admin form and verified on POST |
 | Brute force | Login limited to 12 attempts / 15 min per IP; uploads, QR and contact are also rate-limited |
-| Uploads | MIME allow-list, Sharp content validation, 5 MB (admin) / 10 MB (public) limits, random filenames, image-only serving, no execution |
+| Uploads | MIME allow-list, Sharp content validation, 4 MB limit on every upload, random filenames, image-only serving, no execution |
 | Injection | No `eval`, no `new Function`, no SQL (no database), no shelling out; JSON parsed with `JSON.parse` and validated; output HTML-escaped |
 | XSS | All dynamic values are escaped server-side; uploaded SVGs are only ever referenced as `<img>` |
 | Errors | Stack traces go to the server log; visitors and API clients get a friendly generic message |
@@ -506,7 +506,7 @@ SESSION_SECRET="$(openssl rand -hex 32)" COOKIE_SECURE=true PORT=3000 node serve
 | `EADDRINUSE: address already in use :3000` | Another process is on port 3000. Use `PORT=3001 node server.js` or stop the other process. |
 | `sharp` fails to install | Node version too old (needs 16+), or the platform has no prebuilt binary. On Termux: `pkg install sharp && npm install`. |
 | Login always fails | Credentials are case-sensitive for the password. If the password is lost, delete `data/admin.json`, restart and use `admin` / `admin123`. |
-| “That image is larger than the 10 MB limit” | The compressor limit is 10 MB; the admin uploader limit is 5 MB. Resize the file first. |
+| “That image is larger than the 4 MB limit” | Both the compressor and the admin uploader cap uploads at 4 MB (the Vercel request-body limit). Resize the file first. |
 | Upload rejected as “not a valid image” | The file is not really a JPEG/PNG/WebP (renaming does not change the content) or it is corrupt. |
 | Uploaded images not displayed | Check that `uploads/` exists and is writable; the admin dashboard’s *Storage health* panel shows which folders are missing. |
 | Changes disappear after a restart | A hosting platform with an ephemeral filesystem is wiping `data/`. Mount a persistent volume there. |

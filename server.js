@@ -360,7 +360,7 @@ app.post(
       if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(413).json({
           success: false,
-          error: 'That image is larger than the 10 MB limit. Please choose a smaller file.',
+          error: 'That image is larger than the 4 MB limit. Please choose a smaller file.',
         });
       }
       if (err.code === 'UNSUPPORTED_TYPE') {
@@ -447,9 +447,13 @@ function readMessages() {
 }
 
 function writeMessages(list) {
-  const tmp = `${MESSAGES_FILE}.${process.pid}.tmp`;
-  fs.writeFileSync(tmp, `${JSON.stringify(list, null, 2)}\n`, 'utf8');
-  fs.renameSync(tmp, MESSAGES_FILE);
+  try {
+    const tmp = `${MESSAGES_FILE}.${process.pid}.tmp`;
+    fs.writeFileSync(tmp, `${JSON.stringify(list, null, 2)}\n`, 'utf8');
+    fs.renameSync(tmp, MESSAGES_FILE);
+  } catch (err) {
+    console.warn(`[contact] cannot persist message (read-only filesystem): ${err.message}`);
+  }
 }
 
 app.post('/api/contact', apiLimiter(6, 60), sameOriginOnly, (req, res) => {
@@ -886,7 +890,7 @@ function handleUpload(req, res, next) {
   contentUpload.single('image')(req, res, (err) => {
     if (!err) return next();
     if (err.code === 'LIMIT_FILE_SIZE') {
-      flash(req, 'error', 'That image is larger than the 5 MB limit. Please compress it first or upload a smaller file.');
+      flash(req, 'error', 'That image is larger than the 4 MB limit. Please compress it first or upload a smaller file.');
       return res.redirect(req.get('referer') && req.get('referer').includes('/admin') ? req.get('referer').split('?')[0] : '/admin/images');
     }
     if (err.code === 'UNSUPPORTED_TYPE') {

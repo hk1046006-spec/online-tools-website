@@ -6,6 +6,9 @@ data/sessions.json
 data/session-secret.txt
 data/messages.json
 
+# local admin password for the test suite (never commit this)
+tests/.admin-password
+
 # logs and temp files
 *.log
 *.tmp

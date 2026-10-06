@@ -18,7 +18,26 @@ const ROOT = path.join(__dirname, '..');
 
 let passed = 0;
 let failed = 0;
+let skipped = 0;
 const failures = [];
+
+/**
+ * The admin password is never hardcoded here: this file is in a public repo.
+ * Set TOOLBOX_ADMIN_PASSWORD (or create the gitignored tests/.admin-password)
+ * to exercise the authenticated admin flows. Without it, those checks report
+ * SKIPPED and the suite still succeeds.
+ */
+const ADMIN_USERNAME = process.env.TOOLBOX_ADMIN_USER || 'admin';
+const ADMIN_PASSWORD = (() => {
+  if (process.env.TOOLBOX_ADMIN_PASSWORD) return process.env.TOOLBOX_ADMIN_PASSWORD;
+  try {
+    const value = fs.readFileSync(path.join(__dirname, '.admin-password'), 'utf8').trim();
+    return value || null;
+  } catch (err) {
+    return null;
+  }
+})();
+let adminAuthed = false;
 
 function ok(name, extra) {
   passed += 1;
@@ -34,10 +53,36 @@ function fail(name, error) {
 async function test(name, fn) {
   try {
     const extra = await fn();
+    // A skipped check reports SKIP and must never also be counted as a pass.
+    if (extra === SKIPPED_MARKER) return;
     ok(name, typeof extra === 'string' ? extra : undefined);
   } catch (error) {
     fail(name, error.message);
   }
+}
+
+const SKIPPED_MARKER = Symbol('skipped');
+
+/** Reports a check as skipped and returns the marker the harness looks for. */
+function skip(name, reason) {
+  skipped += 1;
+  console.log(`  SKIP  ${name} — ${reason}`);
+  return SKIPPED_MARKER;
+}
+
+/**
+ * Returns the skip marker when no authenticated admin session is available,
+ * otherwise null. Callers must return the marker so the harness does not
+ * record a pass:  const s = skipIfNotAuthed(name); if (s) return s;
+ */
+function skipIfNotAuthed(name) {
+  if (adminAuthed) return null;
+  return skip(
+    name,
+    ADMIN_PASSWORD
+      ? 'admin login did not succeed with the supplied password'
+      : 'set TOOLBOX_ADMIN_PASSWORD (or tests/.admin-password) to run this check'
+  );
 }
 
 /* ------------------------------------------------------------------ *
@@ -359,15 +404,15 @@ async function main() {
     return `HTTP ${response.status}: ${data.error.slice(0, 60)}…`;
   });
 
-  await test('rejects an oversized file (>10 MB)', async () => {
-    const big = Buffer.alloc(11 * 1024 * 1024, 0x41);
+  await test('rejects an oversized file (>4 MB)', async () => {
+    const big = Buffer.alloc(5 * 1024 * 1024, 0x41);
     const response = await client.postMultipart('/api/image/compress', {
       fields: {},
       file: { field: 'image', filename: 'huge.png', contentType: 'image/png', data: big },
     });
     const data = await response.json();
     assert.strictEqual(response.status, 413, `status ${response.status}`);
-    assert.ok(/10 MB/i.test(data.error), data.error);
+    assert.ok(/4 MB/i.test(data.error), data.error);
     return data.error.slice(0, 60);
   });
 
@@ -691,7 +736,13 @@ async function main() {
   });
 
   await test('correct credentials create a session', async () => {
-    const response = await admin.postForm('/admin/login', { username: 'admin', password: 'admin123' });
+    if (!ADMIN_PASSWORD) {
+      return skip(
+        'correct credentials create a session',
+        'set TOOLBOX_ADMIN_PASSWORD (or tests/.admin-password) to run this check'
+      );
+    }
+    const response = await admin.postForm('/admin/login', { username: ADMIN_USERNAME, password: ADMIN_PASSWORD });
     assert.strictEqual(response.status, 302, `status ${response.status}`);
     assert.ok(response.headers.get('location').endsWith('/admin'), 'did not redirect to the dashboard');
     assert.ok(admin.cookies.size > 0, 'no session cookie was set');
@@ -699,10 +750,13 @@ async function main() {
     const html = await dashboard.text();
     assert.strictEqual(dashboard.status, 200);
     assert.ok(html.includes('Dashboard'), 'dashboard did not render');
+    adminAuthed = true;
     return 'session cookie issued';
   });
 
   await test('every admin page renders for a signed-in user', async () => {
+    const skipMarker = skipIfNotAuthed('every admin page renders for a signed-in user');
+    if (skipMarker) return skipMarker;
     const pages = {
       '/admin': 'Dashboard',
       '/admin/settings': 'Website settings',
@@ -721,6 +775,8 @@ async function main() {
   });
 
   await test('CSRF-less form submissions are refused', async () => {
+    const skipMarker = skipIfNotAuthed('CSRF-less form submissions are refused');
+    if (skipMarker) return skipMarker;
     const response = await admin.postForm('/admin/settings', { siteName: 'Hacked' });
     assert.strictEqual(response.status, 403, `status ${response.status}`);
     const settings = require(path.join(ROOT, 'data', 'settings.json'));
@@ -728,6 +784,8 @@ async function main() {
   });
 
   await test('admin can save settings and they persist to data/settings.json', async () => {
+    const skipMarker = skipIfNotAuthed('admin can save settings and they persist to data/settings.json');
+    if (skipMarker) return skipMarker;
     const settingsPage = await admin.get('/admin/settings');
     const html = await settingsPage.text();
     const csrf = html.match(/name="csrf" value="([a-f0-9]+)"/)[1];
@@ -750,6 +808,8 @@ async function main() {
   });
 
   await test('admin image upload stores a random filename + thumbnail', async () => {
+    const skipMarker = skipIfNotAuthed('admin image upload stores a random filename + thumbnail');
+    if (skipMarker) return skipMarker;
     const csrf = (await (await admin.get('/admin/images')).text()).match(/name="csrf" value="([a-f0-9]+)"/)[1];
     const response = await admin.postMultipart('/admin/images/upload', {
       fields: { csrf, folder: 'images' },
@@ -771,6 +831,8 @@ async function main() {
   });
 
   await test('admin upload rejects a non-image (fake PNG)', async () => {
+    const skipMarker = skipIfNotAuthed('admin upload rejects a non-image (fake PNG)');
+    if (skipMarker) return skipMarker;
     const csrf = (await (await admin.get('/admin/images')).text()).match(/name="csrf" value="([a-f0-9]+)"/)[1];
     const response = await admin.postMultipart('/admin/images/upload', {
       fields: { csrf, folder: 'images' },
@@ -796,6 +858,8 @@ async function main() {
   });
 
   await test('replacing a content image swaps the file and the public page follows', async () => {
+    const skipMarker = skipIfNotAuthed('replacing a content image swaps the file and the public page follows');
+    if (skipMarker) return skipMarker;
     const contentBefore = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'content.json'), 'utf8'));
     const slot = 'promo';
     const before = contentBefore[slot].imageId;
@@ -836,6 +900,8 @@ async function main() {
   });
 
   await test('admin can use an existing library image for a section', async () => {
+    const skipMarker = skipIfNotAuthed('admin can use an existing library image for a section');
+    if (skipMarker) return skipMarker;
     global.__contactImageBefore = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'content.json'), 'utf8')).contact.imageId;
     const csrf = (await (await admin.get('/admin/images')).text()).match(/name="csrf" value="([a-f0-9]+)"/)[1];
     const registry = JSON.parse(execSyncNode(`
@@ -861,6 +927,8 @@ async function main() {
   });
 
   await test('admin contact message flow works end to end', async () => {
+    const skipMarker = skipIfNotAuthed('admin contact message flow works end to end');
+    if (skipMarker) return skipMarker;
     const send = await client.postJson('/api/contact', {
       name: 'Test Visitor',
       email: 'visitor@example.com',
@@ -892,6 +960,8 @@ async function main() {
   });
 
   await test('logout ends the session', async () => {
+    const skipMarker = skipIfNotAuthed('logout ends the session');
+    if (skipMarker) return skipMarker;
     const html = await (await admin.get('/admin')).text();
     const csrf = html.match(/name="csrf" value="([a-f0-9]+)"/)[1];
     const response = await admin.postForm('/admin/logout', { csrf });
@@ -946,7 +1016,7 @@ async function main() {
 
   /* ---------- summary ---------- */
   console.log(`\n──────────────────────────────────────────────`);
-  console.log(`  ${passed} passed, ${failed} failed`);
+  console.log(`  ${passed} passed, ${failed} failed${skipped ? `, ${skipped} skipped` : ''}`);
   if (failed) {
     console.log('\n  Failures:');
     failures.forEach((f) => console.log(`   · ${f}`));

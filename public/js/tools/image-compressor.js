@@ -31,7 +31,7 @@
   var ACCEPTED_TYPES = ['image/jpeg', 'image/png'];
   var ACCEPTED_EXT = /\.(jpe?g|png)$/i;
   var REJECTED_EXT = /\.(exe|zip|rar|7z|tar|gz|pdf|js|mjs|php|php\d|html?|htm|txt|csv|sh|bat|cmd|msi|dll|so|py|rb|pl|svg|gif|bmp|tiff?|webp|avif|heic|ico|mp4|mov|mp3|wav|docx?|xlsx?|pptx?)$/i;
-  var MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+  var MAX_BYTES = 4 * 1024 * 1024; // 4 MB (Vercel request-body limit)
 
   var selectedFile = null;
   var originalUrl = null;
@@ -82,7 +82,7 @@
       return 'That file is empty (0 bytes). Please choose a different image.';
     }
     if (file.size > MAX_BYTES) {
-      return 'That image is ' + ToolBox.formatBytes(file.size) + ', which is larger than the 10 MB limit. Please pick a smaller file.';
+      return 'That image is ' + ToolBox.formatBytes(file.size) + ', which is larger than the 4 MB limit. Please pick a smaller file.';
     }
     return null;
   }
