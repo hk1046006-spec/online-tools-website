@@ -150,6 +150,20 @@ app.use(
   express.static(UPLOAD_DIR, { maxAge: '7d', index: false, dotfiles: 'deny' })
 );
 
+/**
+ * Private JSON storage (admin.json, settings.json, content.json, messages.json,
+ * sessions.json …) lives in /data on disk and is never public. Anything whose
+ * path starts with /data is answered with a plain 404 right here, before it can
+ * reach a static handler or a route, so those files can only ever be read and
+ * written internally by the store helpers.
+ */
+app.use((req, res, next) => {
+  if (req.path.startsWith('/data')) {
+    return res.status(404).type('text/plain').send('Not found');
+  }
+  return next();
+});
+
 /* ------------------------------------------------------------------ *
  * Request helpers
  * ------------------------------------------------------------------ */
