@@ -573,6 +573,14 @@ html[data-theme="dark"] .theme-toggle__moon {
   opacity: 0.8;
 }
 
+/* ---------- Portfolio build: placeholder ad slots hidden ----------
+   The ad slot markup is still rendered in the HTML (and still tested), but the
+   empty striped placeholders are not shown. Delete this rule to bring the
+   placeholders back the moment real ads are added. */
+.ad-slot {
+  display: none;
+}
+
 /* ---------- 6. Buttons ---------- */
 .btn {
   display: inline-flex;
